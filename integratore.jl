@@ -228,4 +228,4 @@ image = Matrix{Float64}(thickness.(projection_matrix))
 clamper = scaleminmax(0,max)
 image =  map(clamper, image)
 
-save("$filename.png", image)
+save("src_img\\$filename.png", image)

@@ -3,7 +3,7 @@ using Images
 filename = "sfera"
 
 # Read the image from a file
-img = load("$filename.png")
+img = load("src_img\\$filename.png")
 
 # Convert to grayscale
 img = Gray.(img)
@@ -20,4 +20,4 @@ clamper=scaleminmax(0,max)
 lap = clamper.(lap)
 
 # Display the original and Laplacian image side by side
-save("$(filename)_lap.png", hcat(img, lap))
+save("rendering\\$(filename)_lap.png", hcat(img, lap))
