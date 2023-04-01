@@ -171,7 +171,7 @@ function project_mesh(vertices, faces, n)
 end
 
 
-projection_matrix = project_mesh(load_obj("$filename.obj")..., resolution)
+projection_matrix = project_mesh(load_obj("obj\\$filename.obj")..., resolution)
 
 
 contatore = 0
@@ -197,4 +197,4 @@ clamper = scaleminmax(0,max)
 image =  map(clamper, image)
 
 
-save("$filename.png", image)
+save("src_img\\$filename.png", image)

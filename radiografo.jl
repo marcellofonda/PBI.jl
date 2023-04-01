@@ -3,7 +3,7 @@ using ImageMagick
 
 filename = "gruppo_1024"
 
-t = load("$filename.png")
+t = load("src_img\\$filename.png")
 #Laplaciano = load("sfera_lap.png")
 
 t = Matrix{BigFloat}(t)
@@ -20,14 +20,14 @@ I_0 = 1
 f(x) = exp(-(2 * k * beta) * x)
 
 ca = scaleminmax(0,maximum(t))
-save("Provaprova.png", ca.(t))
+#save("Provaprova.png", ca.(t))
 
 img = I_0 * f.(t)
 max = maximum(img)
 println(max)
 
 ca = scaleminmax(0,max)
-save("assorbimento_$filename.png", Matrix{Float64}(ca.(img)./2))
+save("rendering\\$filename\\assorbimento_$filename.png", Matrix{Float64}(ca.(img)./2))
 
 # Define Laplacian kernel
 #kernel = [-1 -1 -1; -1 8 -1; -1 -1 -1]
@@ -63,7 +63,7 @@ immagini = [clamper.(immagini[i]) for i in 1:length(immagini)]
 
 animazione = cat(immagini..., dims=3)
 
-#save("radiografie_$filename.gif", animazione, fps=10)
+save("radiografie_$filename.gif", animazione, fps=10)
 
 
 for i in 1:1#length(immagini)
