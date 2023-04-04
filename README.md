@@ -1,3 +1,6 @@
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+
 # Radiografia in contrasto di fase
 
 I programmi in questo repository rappresentano un po' di strumenti che ho sviluppato per la mia tesi sull'imaging ai raggi X in contrasto di fase. Il focus della tesi è sul contrasto a propagazione libera.
