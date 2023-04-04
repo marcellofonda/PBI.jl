@@ -28,7 +28,7 @@ dove $z_1$ è la distanza tra oggetto e rilevatore.
 ## I programmi
 
 Ci sono tre programmi principali:
-* `integratore.jl` è l'espressione della "projection approximation": dato un modello tridimensionale in formato `.obj`, ne calcola lo spessore in ogni punto del piano dell'oggetto ($t(x,y)$) e salva il risultato come un'immagine in bianco e nero. La proiezione viene fatta, per scelta personale, sul piano $yz$ invece che sul piano $xy$, perché di solito i raggi si propagano orizzontalmente ed è più comodo modellare oggetti sul piano orizzontale. Questa scelta, per quanto significativa nella produzione del modello, è ininfluente per tutto il resto.
+* `integratore.jl` è l'espressione della "projection approximation": dato un modello tridimensionale in formato `.obj`, ne calcola lo spessore in ogni punto del piano dell'oggetto ( $t(x,y)$ ) e salva il risultato come un'immagine in bianco e nero. La proiezione viene fatta, per scelta personale, sul piano $yz$ invece che sul piano $xy$, perché di solito i raggi si propagano orizzontalmente ed è più comodo modellare oggetti sul piano orizzontale. Questa scelta, per quanto significativa nella produzione del modello, è ininfluente per tutto il resto.
 
 	Le tre funzioni principali sono:
 	* `load_obj(filename::AbstractString)`
