@@ -102,13 +102,17 @@ function project_mesh(vertices, faces, n)
 
     n_faces = length(faces)
     face_counter = 0
+	percentage = 0
     for face in faces
-
+		face_counter += 1
         # Print the progress as a percentage of faces mapped
-        percentage = div(face_counter*100,n_faces)
-        face_counter += 1
-        print("$percentage%", "   ")
-        print("\r")
+		if (div(face_counter*100,n_faces) > percentage)
+        	percentage += 1
+			print("$percentage%", "   ")
+	        print("\r")
+		end
+
+
 
         # Calculate plane of face
         v1 = vertices[face[1]]
