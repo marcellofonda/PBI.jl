@@ -214,6 +214,9 @@ end
 function thickness(vector)
     thick = 0
     leng = length(vector)
+	if (leng == 1)
+		return 0
+	end
     if (leng % 2 != 0)
         #global contatore
         println("Oppa, qua ne ho trovati $leng : $vector")
