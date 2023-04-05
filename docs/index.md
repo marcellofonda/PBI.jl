@@ -23,10 +23,10 @@ I programmi in questo repository rappresentano un po' di strumenti che ho svilup
 
 Le assunzioni e relative approssimazioni principali che vengono usate nella trattazione sono:
 
-1. "Projection approximation" che assume che il campione sia "sottile", cioè che tutti i suoi effetti sulla radiazione possano essere accumulati su un piano ortogonale alla propagazione della radiazione (il piano del campione, o "object plane"). Il campione può quindi essere descritto come una funzione a due variabili, ossia tramite una densità planare di "attività ottica". [^1] Questa funzione avrà due componenti: una di attenuazione/assorbimento e una di traslazione fase, che chiamiamo $\Phi$.
-2. "Paraxial approximation", che assume che i vettori d'onda che descrivono la radiazione vengano deviati, durante l'interazione con il campione, di un angolo molto piccolo, cosicché l'immagine registrata possa essere considerata come una funzione locale della densità di attività ottica: ogni pixel sull'immagine dipende solo da un piccolo intorno del corrispondente punto sul piano del campione.
-3. "Weak phase contrast": gli effetti dovuti all'interzaione sono deboli. [^dubbio] Questo permette di approssimare al primo ordine in $\Phi$ gli effetti di contrasto di fase.
-4. "Monomorficity condition": il campione è composto da un unico materiale, di cui sono noti $\delta$ e $\beta$ ($n=\delta+i\beta$ è l'indice di rifrazione complesso del materiale). Ciò permette di scrivere $\Phi(x,y)=-k\delta t(x,y)$ ed il termine di attenuazione come $e^{-2k\beta t(x,y)}$, con $t(x,y)$ lo spessore dell'oggetto nel piano del campione e $k$ il numero d'onda della radiazione.
+1. _"Projection approximation"_ che assume che il campione sia "sottile", cioè che tutti i suoi effetti sulla radiazione possano essere accumulati su un piano ortogonale alla propagazione della radiazione (il piano del campione, o "object plane"). Il campione può quindi essere descritto come un oggetto bidimensionale equivalente, ossia funzione a due variabili, con due componenti: una che sintetizzi gli effetti di attenuazione/assorbimento e una per quelli di traslazione di fase. Chiamiamo $\Phi$ quest'ultima componente di "phase shift".
+2. _"Paraxial approximation"_, che assume che i vettori d'onda che descrivono la radiazione vengano deviati, durante l'interazione con il campione, di un angolo molto piccolo, cosicché l'immagine registrata possa essere considerata come una funzione locale della densità di attività ottica: ogni pixel sull'immagine dipende solo da un piccolo intorno del corrispondente punto sul piano del campione.
+3. _"Weak phase contrast"_: gli effetti dovuti all'interzaione sono deboli. [^dubbio] Questo permette di approssimare al primo ordine in $\Phi$ gli effetti di contrasto di fase.
+4. _"Monomorficity condition"_: il campione è composto da un unico materiale, di cui sono noti $\delta$ e $\beta$ ($n=\delta+i\beta$ è l'indice di rifrazione complesso del materiale). Ciò permette di scrivere $\Phi(x,y)=-k\delta t(x,y)$ ed il termine di attenuazione come $e^{-2k\beta t(x,y)}$, con $t(x,y)$ lo spessore dell'oggetto nel piano del campione e $k$ il numero d'onda della radiazione.
 
 L'equazione che risulta per l'intensità da queste approssimazioni è
 
@@ -34,10 +34,7 @@ $$
 I(x,y)=I_0(1-\frac{z_1\delta}{2k\beta}\nabla^2)e^{-2k\beta t(x,y)},
 $$
 
-dove $z_1$ è la distanza tra oggetto e rilevatore.
-
-
-[^1]: Mi sono inventato io il termine "attività ottica" in questo contesto, non so quanto sia adeguato.
+dove $z_1$ è la distanza tra oggetto e rilevatore. I programmi contenuti in questo repository prendono un oggetto tridimensionale, descritto da una mesh in formato `.obj` e ne simulano una radiografia al contrasto di fase, secondo la formula appena espressa.
 
 [^dubbio]: Non ho capito perché in realtà, siccome sfruttiamo proprio il fatto che il laplaciano diverga per avere gli effetti di bordo...
 
