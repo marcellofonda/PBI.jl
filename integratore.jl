@@ -232,7 +232,7 @@ projection_matrix = project_mesh(load_obj("obj\\$filename.obj")..., resolution)
 
 image = Matrix{Float64}(thickness.(projection_matrix))
 
-clamper = scaleminmax(0,max)
+clamper = scaleminmax(0,maximum(image))
 image =  map(clamper, image)
 
 save("src_img\\$filename.png", image)
