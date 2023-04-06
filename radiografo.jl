@@ -38,8 +38,10 @@ println(max)
 #lap = imfilter(assorb, kernel)
 #println(maximum(lap))
 
+
+#Compute Laplacian using an explicit formula, more stable numerically
 function lap_spec(t)
-	return imfilter(t, Kernel.Laplacian()) + sum([imfilter(t, k).^2 for k in Kernel.scharr()])
+	return - (2 * k * beta) * (imfilter(t, Kernel.Laplacian()) - (2 * k * beta) * sum([imfilter(t, k).^2 for k in Kernel.scharr()]))
 end
 
 
