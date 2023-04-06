@@ -1,5 +1,6 @@
 using Images
 using ImageMagick
+using FiniteDiff
 
 filename = "gruppo_1024"
 
@@ -31,11 +32,19 @@ println(max)
 
 # Define Laplacian kernel
 #kernel = [-1 -1 -1; -1 8 -1; -1 -1 -1]
-kernel = [0 1 0; 1 -4 1; 0 1 0]
+#kernel = [0 1 0; 1 -4 1; 0 1 0]
 
 # Compute Laplacian using convolution
-lap = imfilter(img, kernel)
-println(maximum(lap))
+#lap = imfilter(assorb, kernel)
+#println(maximum(lap))
+
+function lap_spec(t)
+	return imfilter(t, Kernel.Laplacian()) + sum([imfilter(t, k).^2 for k in Kernel.scharr()])
+end
+
+
+lap = assorb .* lap_spec(t)
+
 
 immagini = []
 max = 0
