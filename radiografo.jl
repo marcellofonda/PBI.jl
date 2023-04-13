@@ -34,7 +34,7 @@ println(max)
 kernel = [0 1 0; 1 -4 1; 0 1 0]
 
 # Compute Laplacian using convolution
-lap = imfilter(img, kernel)
+lap = imfilter(assorb, kernel)
 println(maximum(lap))
 
 immagini = []
