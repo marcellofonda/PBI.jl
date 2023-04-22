@@ -14,8 +14,8 @@ using LinearAlgebra
 using Images
 using FileIO
 
+pixelsize = 1e-6
 
-resolution = 1024
 filename = "gruppo"
 
 function load_obj(filename::AbstractString)
@@ -75,10 +75,9 @@ end
 
 
 
-function project_mesh(vertices, faces, n)
-    # Initialize output matrix
-    matrix = [[[] for j in 1:n] for i in 1:n]
+function project_mesh(vertices, faces, pixelsize, scale)
 
+	vertices .*= scale
     nverts = size(vertices, 1)
 
     # Find the bounding box of the projection of the mesh on the yz plane
@@ -86,16 +85,35 @@ function project_mesh(vertices, faces, n)
     min_y = minimum([ vertices[i][2] for i in 1:nverts ])
     max_y = maximum([ vertices[i][2] for i in 1:nverts ])
     min_z = minimum([ vertices[i][3] for i in 1:nverts ])
-    max_z = maximum([ vertices[i][3] for i in 1:nverts])
+    max_z = maximum([ vertices[i][3] for i in 1:nverts ])
 
-    for i in 1:nverts
-        vertices[i] -= [0, min_y, min_z]
-    end
+	# One thing that might come in handy is to make the ranges' size to be
+	# a power of 2, or at least a small multiple. On my TODO list.
+	y_range = (min_y-pixelsize):pixelsize:(max_y + pixelsize)
+	z_range = (min_z-pixelsize):pixelsize:(max_z + pixelsize)
+
+	# for (i, y) in enumerate(y_range)
+	# 	println(i, " hi ", y)
+	# end
+	#
+	# println(max_y-min_y, " ", max_z-min_z)
+    # for i in 1:nverts
+    #     vertices[i] -= [0, min_y, min_z]
+    # end
 
     # Find the normalization constant to fit the mesh into the [0,1]x[0,1] square
     # i.e. the maximum side length of the bounding box. This will be used to
     # correctly spread the pixels throughout the 3D space.
-    scaling = maximum([max_y-min_y, max_z-min_z])
+    #scaling = maximum([max_y-min_y, max_z-min_z])
+
+	n = size(y_range)[1]
+	m = size(z_range)[1]
+
+	println(n, " ", m)
+
+	# Initialize output matrix
+    matrix = [[y,z] for z in z_range, y in y_range]
+
 
     println("Projecting matrix ...")
     println()
@@ -137,9 +155,9 @@ function project_mesh(vertices, faces, n)
         min_z_tri = minimum( [ v1[3], v2[3], v3[3] ] )
 
         # Iterate over rows of matrix
-        Threads.@threads for i = 1:n
+        Threads.@threads for (i,y) in collect(enumerate(y_range))
             # Compute the corresponding y value
-            y = (i - 0.5) * scaling / n
+            #y = (i - 0.5) * scaling / n
 
             # Check if we are within the bounding box
             if (y < min_y_tri)
@@ -149,9 +167,9 @@ function project_mesh(vertices, faces, n)
             end
 
             # Iterate over columns of matrix
-            for j = 1:n
+            for (j,z) in collect(enumerate(z_range))
                 # Compute the corresponding z value
-                z = (j - 0.5) * scaling / n
+                #z = (j - 0.5) * scaling / n
 
                 # Check if we are within the bounding box
                 if (z < min_z_tri)
@@ -228,11 +246,13 @@ function thickness(vector)
     return thick
 end
 
-projection_matrix = project_mesh(load_obj("obj\\$filename.obj")..., resolution)
+projection_matrix = project_mesh(load_obj("obj\\$filename.obj")...,pixelsize, 0.001)
 
 image = Matrix{Float64}(thickness.(projection_matrix))
 
 clamper = scaleminmax(0,maximum(image))
 image =  map(clamper, image)
 
-save("src_img\\$filename.png", image)
+resolution = size(image)
+
+save("src_img\\$(filename)_$(resolution[1])_$(resolution[2]).png", image)
