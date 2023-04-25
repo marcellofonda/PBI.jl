@@ -55,16 +55,16 @@ function load_obj(filename::AbstractString)
 end
 
 function projection(v)
-	return (v[2], v[3])
+	return SVector(v[2], v[3])
 end
 
-function triangle_contains_point(tri1,tri2,tri3, y::Float64, z::Float64)
+function triangle_contains_point(tri1::SVector{3,Float64},tri2::SVector{3,Float64},tri3::SVector{3,Float64}, y::Float64, z::Float64)
 
     # Get the 3 vectors representing, whith respect to the projection of tri1 on the
     # yz plane, the other vertices and [y,z]
-    v0 = projection(tri2) .- projection(tri1)
-    v1 = projection(tri3) .- projection(tri1)
-    v2 = (y,z) .- projection(tri1)
+    v0 = projection(tri2) - projection(tri1)
+    v1 = projection(tri3) - projection(tri1)
+    v2 = SVector(y,z) - projection(tri1)
 
     # Do the maths of using barycentric coordinates. Idk what this means, but
     # it seems like ChatGPT knows what they're doing.
