@@ -9,76 +9,49 @@ beta = 5e-8
 k=5e4
 z = 20e4
 
-image = load("rendering\\$filename\\sequenze\\1$filename.png")
-image = Float64.(image)
-I_0 = image[1,1]
 
-transform = real.(fft(image ./ I_0))
+function PhaseRetrieve(input_image, delta, beta, k, z; pixelsize=1)
 
-min = minimum(transform)
-max = maximum(transform)/100
-println(min," ", max)
-clamper = scaleminmax(min, max)
+	image = Float64.(input_image)
 
-save("rendering\\$filename\\trasformate\\$(filename)_transform.png", clamper.(transform))
+	I_0 = image[1,1]
 
-transform = fftshift(transform)
+	image_size = size(image)
 
-min = minimum(transform)
-max = maximum(transform)/100
-println(min," ", max)
-clamper = scaleminmax(min, max)
+	# Double the size of the image for FFT purposes and fill the remaining spaces
+	# with zeros
+	c = zeros((image_size .* 2)...)
+	c .+= I_0
+	c[1:(image_size[1]),1:(image_size[2])] = image
+	image = c
 
-save("rendering\\$filename\\trasformate\\$(filename)_transform_shifted.png", clamper.(transform))
+	# Save the size of the bigger image
+	transform_size = size(image)
 
-freq_grid = fftfreq(size(image, 1), 1) #|> fftshift
+	#Do Fourier transform
+	transform = real.(fft(image ./ I_0))
+	#Put origin in the center of the image
+	transform = fftshift(transform)
 
-save("rendering\\$filename\\trasformate\\$(filename)_freq.png", clamp01.(freq_grid))
+	# Get the spatial frequency corresponding to each pixel in the new image
+	freq_grid_x = fftfreq(transform_size[1], 2pi/pixelsize) |> fftshift
+	freq_grid_y = fftfreq(transform_size[2], 2pi/pixelsize) |> fftshift
 
-freq_grid = fftfreq(size(image)[1], 1) |> fftshift
+	cost = (z * delta) / (2k * beta)
 
-save("rendering\\$filename\\trasformate\\$(filename)_freq_shifted.png", clamp01.(freq_grid))
-
-antitransform = real.(ifft(ifftshift(transform)))
-
-min = minimum(antitransform)
-max = maximum(antitransform)
-println(min," ", max)
-clamper = scaleminmax(min, max)
-
-save("rendering\\$filename\\trasformate\\$(filename)_antitransform.png", clamper.(antitransform))
-
-
-
-cost = z*delta /(2k* beta)
-
-
-for i in 1:size(transform)[1]
-	for j in 1:size(transform)[2]
-		#transform[i,j] /= (1 + cost * ((i-size(transform)[1])^2 + (j-size(transform)[2])^2)/1000000)
-		transform[i,j] /= (1 + cost * (freq_grid[i]^2 + freq_grid[j]^2)*100)
+	# Apply the phase retrieval filter in Fourier space
+	for i in 1:(transform_size[1])
+		for j in 1:(transform_size[2])
+			transform[i,j] /= (1 + cost * (freq_grid_x[i]^2 + freq_grid_y[j]^2))
+		end
 	end
+
+	# Do the antitransform and take the real part, just to be sure no accidental complex
+	# numbers appear
+	antitransform = real.(ifft(ifftshift(transform)))[1:image_size[1], 1:image_size[2]]
+
+	# Apply the remaining part of the retrieval algorithm
+	antitransform = -1/(2k* beta) * log.(antitransform)
+
+	return antitransform
 end
-
-min = minimum(transform)
-max = maximum(transform)/100
-println(min," ", max)
-clamper = scaleminmax(min, max)
-
-save("rendering\\$filename\\trasformate\\$(filename)_filtered.png", clamper.(transform))
-
-antitransform = real.(ifft(ifftshift(transform)))
-
-min = minimum(antitransform) -.1
-max = maximum(antitransform)
-println(min," ", max)
-clamper = scaleminmax(min, max)
-
-antitransform = -1/(2k* beta) * log.(clamper.(antitransform))
-
-min = minimum(antitransform)
-max = maximum(antitransform)
-println(min," ", max)
-clamper = scaleminmax(min, max)
-
-save("rendering\\$filename\\trasformate\\$(filename)_retrieval.png", clamper.(antitransform))

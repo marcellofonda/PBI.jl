@@ -14,10 +14,6 @@ using LinearAlgebra
 using Images
 using FileIO
 
-pixelsize = 1e-6
-
-filename = "gruppo"
-
 function load_obj(filename::AbstractString)
     # Read file contents
     file_contents = read(filename, String)
@@ -77,6 +73,9 @@ end
 
 function project_mesh(vertices, faces, pixelsize, scale)
 
+	#Necessary because units are in micrometers
+	pixelsize *= 1e-6
+
 	vertices .*= scale
     nverts = size(vertices, 1)
 
@@ -92,15 +91,6 @@ function project_mesh(vertices, faces, pixelsize, scale)
 	y_range = (min_y-pixelsize):pixelsize:(max_y + pixelsize)
 	z_range = (min_z-pixelsize):pixelsize:(max_z + pixelsize)
 
-	# for (i, y) in enumerate(y_range)
-	# 	println(i, " hi ", y)
-	# end
-	#
-	# println(max_y-min_y, " ", max_z-min_z)
-    # for i in 1:nverts
-    #     vertices[i] -= [0, min_y, min_z]
-    # end
-
     # Find the normalization constant to fit the mesh into the [0,1]x[0,1] square
     # i.e. the maximum side length of the bounding box. This will be used to
     # correctly spread the pixels throughout the 3D space.
@@ -109,10 +99,10 @@ function project_mesh(vertices, faces, pixelsize, scale)
 	n = size(y_range)[1]
 	m = size(z_range)[1]
 
-	println(n, " ", m)
+	println("Expected size of output image is:", n, "x", m)
 
 	# Initialize output matrix
-    matrix = [[y,z] for z in z_range, y in y_range]
+    matrix = [[] for z in z_range, y in y_range]
 
 
     println("Projecting matrix ...")
@@ -129,8 +119,6 @@ function project_mesh(vertices, faces, pixelsize, scale)
 			print("$percentage%", "   ")
 	        print("\r")
 		end
-
-
 
         # Calculate plane of face
         v1 = vertices[face[1]]
@@ -180,7 +168,7 @@ function project_mesh(vertices, faces, pixelsize, scale)
 
                 # Where the x coordinates of the surface of the mesh
                 # will be saved.
-                extrema = matrix[i][j]
+                extrema = matrix[j,i]
 
                 # Check if point is inside the face. I currently don't
                 # trust this method, but it's all I have so far. Might
@@ -222,7 +210,6 @@ function project_mesh(vertices, faces, pixelsize, scale)
 
     println("Done projecting matrix!           ")
 
-    matrix = hcat([s for s in matrix]...)
     sort!.(matrix)
 
     return matrix
@@ -246,13 +233,55 @@ function thickness(vector)
     return thick
 end
 
-projection_matrix = project_mesh(load_obj("obj\\$filename.obj")...,pixelsize, 0.001)
 
-image = Matrix{Float64}(thickness.(projection_matrix))
+function small_primes_product(n::Int)
+    # find the largest power of 2 less than or equal to n
+    res_p2 = 0
+	res_p3 = 0
+	res_p5 = 0
 
-clamper = scaleminmax(0,maximum(image))
-image =  map(clamper, image)
+	result = Inf
 
-resolution = size(image)
+	for p2 in 0:Int(floor(log2(n)+1))
+		for p3 in 0:Int(floor(log(n)/log(3) + 1))
+			for p5 in 0:Int(floor(log(n)/log(5) + 1))
+				temp = 2^p2 * 3^p3 * 5^p5
+				if temp >= n && temp < result
+					result = temp
+					res_p2 = p2
+					res_p3 = p3
+					res_p5 = p5
+				end
+			end
+		end
+	end
 
-save("src_img\\$(filename)_$(resolution[1])_$(resolution[2]).png", image)
+    # print the factorization of the result
+    println("Closest to $n is $result with factorization: 2^$(res_p2) * 3^$(res_p3) * 5^$(res_p5)")
+
+    return result
+end
+
+
+function GetThickness(filename, pixelsize, scale)
+	# Load the .obj file and save the coordinates of the mesh at each pixel of a
+	# grid with size pixelsize.
+	projection_matrix = project_mesh(load_obj("obj\\$filename.obj")...,pixelsize, scale)
+
+	image = Matrix{Float64}(thickness.(projection_matrix))
+
+	image_size = size(image)
+
+	println(image_size)
+
+	#For FFT, having an image size which is a product powers of small primes is better
+	new_size = small_primes_product.(image_size)
+	#Create an empty (black) image of the correct size
+	new_image = zeros(new_size...)
+	#Compute the best border
+	border = Int.(floor.((new_size .- image_size)./2))
+	#Paste the original image, centered, in the empty image
+	new_image[(border[1]) : (border[1]+image_size[1]-1), (border[2]):(border[2]+image_size[2]-1)] = image
+
+	return new_image
+end

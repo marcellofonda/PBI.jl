@@ -1,73 +1,32 @@
 using Images
 using ImageMagick
 
-filename = "gruppo_1024"
+#Given a matrix of numbers, linearly rescale the values so that the minimum value
+#maps to 0 and the maximum to 1. Useful for saving to PNG format.
+function ConvertToPng(image; min=minimum(image), max=maximum(image))
+	clamper = scaleminmax(min, max)
 
-t = load("src_img\\$filename.png")
-#Laplaciano = load("sfera_lap.png")
-
-t = Matrix{BigFloat}(t)
-
-
-delta = 1e-6
-beta = 5e-8
-
-
-k=5e4
-I_0 = 1
-
-
-f(x) = exp(-(2 * k * beta) * x)
-
-#ca = scaleminmax(0,maximum(t))
-#save("Provaprova.png", ca.(t))
-
-assorb = I_0 * f.(t)
-max = maximum(assorb)
-println(max)
-
-#clamp_abs = scaleminmax(0,max)
-#save("rendering\\$filename\\assorbimento_$filename.png", Matrix{Float64}(ca.(img)./2))
-
-# Define Laplacian kernel
-#kernel = [-1 -1 -1; -1 8 -1; -1 -1 -1]
-kernel = [0 1 0; 1 -4 1; 0 1 0]
-
-# Compute Laplacian using convolution
-lap = imfilter(assorb, kernel)
-println(maximum(lap))
-
-immagini = []
-max = 0
-min = 1e10
-for z in 20e4:0.1:20e4
-    global max, min, img
-    cost = (z * delta) / (2k * beta)
-    println(cost)
-    img = assorb - (cost * lap)
-    max_loc = maximum(img)
-    min_loc = minimum(img)
-    if (max_loc > max)
-        max = max_loc
-    end
-    if (min_loc < min)
-        min = min_loc
-    end
-    push!(immagini, img)
+	return Float64.(clamper.(image))
 end
 
+#Given a thickness matrix, compute a Propagation-Based, phase contrast image
+function DoRadiography(thickness, delta, beta, k, I_0, z, pixelsize)
 
-clamper = scaleminmax(min, max)
+	t = Matrix{BigFloat}(thickness)
 
-immagini = [clamper.(immagini[i]) for i in 1:length(immagini)]
+	#Absorption
+	f(x) = exp(-(2 * k * beta) * x)
+	assorb = I_0 * f.(t)
 
-animazione = cat(immagini..., dims=3)
+	# Define Laplacian kernel
+	kernel = [0 1 0; 1 -4 1; 0 1 0]
 
-save("rendering\\$filename\\assorbimento_$filename.png", Matrix{Float64}(clamper.(assorb)))
+	# Compute Laplacian using convolution
+	lap = imfilter(assorb, kernel)
+	#println(maximum(lap))
 
-save("rendering\\$filename\\radiografie_$filename.gif", animazione, fps=10)
+	cost = (z * delta) / (2k * beta)
+	img = assorb - (cost * lap)
 
-
-for i in 1:1#length(immagini)
-    save("rendering\\$filename\\sequenze\\$(i)$filename.png", immagini[i])
+	return img
 end
