@@ -35,12 +35,12 @@ end
 Obtain the squared sum of the spacial frequencies corresponding to an image.
 """
 function getSquaredFrequenciesGrid(n,m,pixelsize)
-	freq_x = fftfreq(n, 2pi/pixelsize)
-	freq_y = fftfreq(m, 2pi/pixelsize)
+	freq_x = fftfreq(n, 2π/pixelsize)
+	freq_y = fftfreq(m, 2π/pixelsize)
 	freq_grid_x = ones(m) * freq_x'
 	freq_grid_y = freq_y * ones(n)'
 
-	return freq_squared = freq_grid_x .^ 2 .+ freq_grid_y .^ 2
+	return freq_grid_x .^ 2 .+ freq_grid_y .^ 2
 end
 
 "Double the size of an image in both directions and fill the new parts with the value of the top left pixel."

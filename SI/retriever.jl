@@ -1,6 +1,6 @@
 using FFTW
 
-function PhaseRetrieve(input_image, delta, beta, k, z, pixelsize)
+function PhaseRetrieve(input_image, δ, β, k, z, pixelsize)
 	println("Executing phase retrieval")
 	image = Float64.(input_image)
 
@@ -24,10 +24,10 @@ function PhaseRetrieve(input_image, delta, beta, k, z, pixelsize)
 	transform = fftshift(transform)
 
 	# Get the spatial frequency corresponding to each pixel in the new image
-	freq_grid_x = fftfreq(transform_size[1], 2pi/pixelsize) |> fftshift
-	freq_grid_y = fftfreq(transform_size[2], 2pi/pixelsize) |> fftshift
+	freq_grid_x = fftfreq(transform_size[1], 2π/pixelsize) |> fftshift
+	freq_grid_y = fftfreq(transform_size[2], 2π/pixelsize) |> fftshift
 
-	cost = (z * delta) / (2k * beta)
+	cost = (z * δ) / (2k * β)
 
 	# Apply the phase retrieval filter in Fourier space
 	for i in 1:(transform_size[1])
@@ -41,7 +41,7 @@ function PhaseRetrieve(input_image, delta, beta, k, z, pixelsize)
 	antitransform = real.(ifft(ifftshift(transform)))[1:image_size[1], 1:image_size[2]]
 
 	# Apply the remaining part of the retrieval algorithm
-	antitransform = -1/(2k* beta) * log.(antitransform)
+	antitransform = -1/(2k* β) * log.(antitransform)
 
 	println("Phase retrieval successfully executed.")
 

@@ -33,8 +33,8 @@ errors = []
 minerror = Inf
 println("OK!")
 for pixelsize in 1e-7:1e-7:2e-6
-	I_R_m, I_0_m, I_R_TIE, intermedio =  DarkFieldRetrieve(downsampled, delta, beta, z, 2pi/k, pixelsize * 8)
-	imag = ifft( I_R_TIE )[1:div(end,2), 1:div(end,2)] .|> real
+	I_R_m, I_0_m, I_R_TIE, intermedio =  DarkFieldRetrieve(downsampled, delta, beta, z, 2π/k, pixelsize * 8)
+	imag = ifft( I_R_TIE )[1:end÷2, 1:end÷2] .|> real
 	error = sum((imag.*4 .- 3 - downsampled).^2)
 	if (error < minerror)
 		global sizee, minerror
@@ -48,12 +48,12 @@ println(sizee)
 
 end
 
-I_R_m, I_0_m, I_R_TIE, intermedio =  DarkFieldRetrieve(downsampled, delta, beta, z, 2pi/k, pixelsize * 8)
+I_R_m, I_0_m, I_R_TIE, intermedio =  DarkFieldRetrieve(downsampled, delta, beta, z, 2π/k, pixelsize * 8)
 
-imag = (ifft( I_R_TIE )[1:div(end,2), 1:div(end,2)] .|> real) .* 4 .- 3
+imag = (ifft( I_R_TIE )[1:end÷2, 1:end÷2] .|> real) .* 4 .- 3
 phaseretrieve=PhaseRetrieve(downsampled, delta, beta, k, z, 8*pixelsize)
-darkfieldimage = hcat(ifft( I_R_m )[1:div(end,2), 1:div(end,2)],ifft( I_0_m )[1:div(end,2), 1:div(end,2)]) .|> real
-intermedio = intermedio[1:div(end,2), 1:div(end,2)]
+darkfieldimage = hcat(ifft( I_R_m )[1:end÷2, 1:end÷2],ifft( I_0_m )[1:end÷2, 1:end÷2]) .|> real
+intermedio = intermedio[1:end÷2, 1:end÷2]
 
 # imshow(thicknes; name="thicknes");
 # imshow(image; name="image");
