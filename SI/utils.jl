@@ -43,15 +43,21 @@ function getSquaredFrequenciesGrid(n,m,pixelsize)
 	return freq_grid_x .^ 2 .+ freq_grid_y .^ 2
 end
 
-"Double the size of an image in both directions and fill the new parts with the value of the top left pixel."
-function backgroundPadding(image)
+
+"Double the size of an image in both directions and pad with zeros."
+function zeroPadding(image)
 	image_size = size(image)
 	# Double the size of the image for FFT purposes and fill the remaining spaces
 	# with zeros
 	c = zeros((image_size .* 2)...)
-	c .+= image[1,1]
-	c[1:(image_size[1]),1:(image_size[2])] = image
+	#c .+= image[1,1]
+	c[image_size[1]÷2+1:3(image_size[1])÷2,image_size[2]÷2+1:3(image_size[2])÷2] = image
 	return c
+end
+
+function removePadding(image)
+	x,y = size(image)
+	return image[x÷4:3x÷4,y÷4:3y÷4]
 end
 
 

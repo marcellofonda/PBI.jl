@@ -225,7 +225,7 @@ function project_mesh(vertices, faces, pixelsize, scale)
 end
 
 #contatore = 0
-function thickness(vector)
+function thicknessCompute(vector)
     thick = 0
     leng = length(vector)
 	if (leng == 1)
@@ -274,7 +274,7 @@ function GetThickness(filename, pixelsize, scale, clean)
 
 	f(x) = x > 0 ? x : 0.
 
-	image = Matrix{Float64}(thickness.(projection_matrix)) .|> f
+	image = Matrix{Float64}(thicknessCompute.(projection_matrix)) .|> f
 
 	image_size = size(image)
 
