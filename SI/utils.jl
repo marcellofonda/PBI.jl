@@ -1,3 +1,5 @@
+image_folder = ""
+
 #Given a matrix of numbers, linearly rescale the values so that the minimum value
 #maps to 0 and the maximum to 1. Useful for saving to PNG format.
 function ConvertToPng(image; min=minimum(image), max=maximum(image))
@@ -88,3 +90,53 @@ function small_primes_product(n::Int)
 
     return result
 end
+
+function printImage(image, name, images_paths)
+	profile_plot = plot(image[end÷2,:], legend=false)
+	image_plot = heatmap(image, c=:grays, ticks=nothing, border=:none, legend=false, aspect_ratio=1.)
+
+	# Combine the image and profile
+	combined_plot = plot(image_plot, profile_plot, layout=(1,2), size=(1920,1080))
+
+	png(combined_plot, "$image_folder\\$name.png")
+
+	push!(images_paths, name)
+
+	"Image printed at $image_folder\\$name.png"
+end
+
+
+
+function create_presentation(image_filenames, title::String, parameters_info)
+    # Open a file for writing
+    open("$title\\$title.tex", "w") do io
+        # Write the preamble
+        write(io, "\\documentclass{beamer}\n")
+        write(io, "\\usepackage{graphicx}\n")
+        write(io, "\\begin{document}\n")
+
+        # Write the title frame
+        write(io, "\\begin{frame}\n")
+        write(io, "\\frametitle{\"$(title)\"}\n")
+		write(io, parameters_info)
+        write(io, "\\end{frame}\n")
+
+        # Write a frame for each image filename
+        for filename in image_filenames
+            write(io, "\\begin{frame}\n")
+            write(io, "\\frametitle{$(replace(filename, "_" => " "))}\n")
+			write(io, "\\begin{figure}\n")
+            write(io, "\\includegraphics[width=\\textwidth]{\"$(filename).png\"}\n")
+			write(io, "\\end{figure}\n")
+            write(io, "\\end{frame}\n")
+        end
+
+        # Write the end of the document
+        write(io, "\\end{document}\n")
+    end
+	cd(title)
+    run(`cmd /C pdflatex $title.tex`)
+	cd("..")
+end
+
+"utils.jl successfully imported!"
