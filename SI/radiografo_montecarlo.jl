@@ -13,7 +13,7 @@ import Base./
 /(x::Tuple{Float64, Float64}, y::Float64) = x ./ y
 
 
-size = 200
+sizee = 200
 samples = 100
 pixelsize = 80e-6
 R = 4.5
@@ -26,10 +26,10 @@ k = 5e10
 N_F = pixelsize^2 * k / (2π * R)
 println("Fresnel number N_F is: $N_F")
 
-R = size * pixelsize * .8
-a = size * pixelsize * .01
+ra = sizee * pixelsize * .8
+a = sizee * pixelsize * .01
 V0 = .002
-woodsaxon(x) = V0 / (1 + exp((norm(x) - R) / a))
+woodsaxon(x) = V0 / (1 + exp((norm(x) - ra) / a))
 
 
 sphere_radius = pixelsize * .1
@@ -38,7 +38,7 @@ sphere(x) = norm(x) > sphere_radius ? 0.0 : sqrt(sphere_radius^2 - dot(x,x))
 
 function grad_woodsaxon(x)
     r = norm(x)
-    common_factor = V0 * exp((r - R) / a) / (a * r * (1 + exp((r - R) / a))^2)
+    common_factor = V0 * exp((r - ra) / a) / (a * r * (1 + exp((r - ra) / a))^2)
 
     grad_x = -x[1] * common_factor
     grad_y = -x[2] * common_factor
@@ -83,7 +83,7 @@ function grad_t(x)
     return gr
 end
 
-#image = centered(zeros(Int8, 2size + 1,2size + 1))
+#image = centered(zeros(Int8, 2sizee + 1,2sizee + 1))
 
 min_angle = 0
 
@@ -95,22 +95,22 @@ println("Starting image formation...\n")
 
 function simulate_single(range)
 	id = Threads.threadid()
-	image = centered(zeros(UInt8, 2size + 1, 2size + 1))
+	image = centered(zeros(UInt8, 2sizee + 1, 2sizee + 1))
 	#any(x-> x<0,image) && println("Oppa")
 	for i in range
 		# indexes[id] += 1
-		# perc = div(indexes[id]*100, ((2size+1)^2 * samples))
+		# perc = div(indexes[id]*100, ((2sizee+1)^2 * samples))
 	    # if (perc > percentages[id])
 	    #     percentages[id]+=1
 	    #     println("$(sum(percentages))%")
 	    # end
 		selector = rand()
-	    x = ((2size+1) * pixelsize * (rand()-.5), (2size+1) * pixelsize * (rand()-.5))
+	    x = ((2sizee+1) * pixelsize * (rand()-.5), (2sizee+1) * pixelsize * (rand()-.5))
 	    if (exp(-2k * β * t(x)) >= selector &&
 			δ * norm(grad_t(x)) >= min_angle )
 
 	        index = Int.(floor.((x + R * δ * grad_t(x)) / pixelsize .+ .5))
-	        if (abs(index[1]) <= size && abs(index[2]) <= size)
+	        if (abs(index[1]) <= sizee && abs(index[2]) <= sizee)
 	            image[index...] += 1 #exp(-2k * β * t(x))
 	        end
 	    end
@@ -129,7 +129,7 @@ function simulate_multi(a)
     return sum(chunk_sums)
 end
 
-image = simulate_multi(1:((2size+1)^2 * samples))
+image = simulate_multi(1:((2sizee+1)^2 * samples))
 heatmap(image)
 println("Done simulating image!")
 # image = Float64.(image) / maximum(image)
