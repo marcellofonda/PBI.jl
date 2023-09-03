@@ -1,4 +1,4 @@
-# X-ray Phase-contrast imaging and retrieval
+# X-ray Propagation-Based Phase-Contrast Imaging and Retrieval
 
 This repository contains some code about phase-contrast imaging using X-rays. More about it at [marcellofonda.github.io/Tesi](https://marcellofonda.github.io/Tesi)
 
