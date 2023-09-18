@@ -13,8 +13,12 @@
 using LinearAlgebra
 using Images
 using FileIO
+using JLD
+include("utils.jl")
+
 
 function load_obj(filename::AbstractString)
+	println("Loading mesh info...")
     # Read file contents
     file_contents = read(filename, String)
 
@@ -74,7 +78,7 @@ end
 function project_mesh(vertices, faces, pixelsize, scale)
 
 	#Necessary because units are in micrometers
-	pixelsize *= 1e-6
+	#pixelsize *= 1e-6
 
 	vertices .*= scale
     nverts = size(vertices, 1)
@@ -99,7 +103,7 @@ function project_mesh(vertices, faces, pixelsize, scale)
 	n = size(y_range)[1]
 	m = size(z_range)[1]
 
-	println("Expected size of output image is:", n, "x", m)
+	println("Expected size of output image is:", n, "x", m, " pixels, i.e. ", n * pixelsize, "x", m * pixelsize, " m.")
 
 	# Initialize output matrix
     matrix = [[] for z in z_range, y in y_range]
@@ -111,6 +115,11 @@ function project_mesh(vertices, faces, pixelsize, scale)
     n_faces = length(faces)
     face_counter = 0
 	percentage = 0
+
+
+	leipsilon = collect(enumerate(y_range))
+    lezeta = collect(enumerate(z_range))
+
     for face in faces
 		face_counter += 1
         # Print the progress as a percentage of faces mapped
@@ -143,7 +152,7 @@ function project_mesh(vertices, faces, pixelsize, scale)
         min_z_tri = minimum( [ v1[3], v2[3], v3[3] ] )
 
         # Iterate over rows of matrix
-        Threads.@threads for (i,y) in collect(enumerate(y_range))
+        Threads.@threads for (i,y) in leipsilon
             # Compute the corresponding y value
             #y = (i - 0.5) * scaling / n
 
@@ -155,7 +164,7 @@ function project_mesh(vertices, faces, pixelsize, scale)
             end
 
             # Iterate over columns of matrix
-            for (j,z) in collect(enumerate(z_range))
+            for (j,z) in lezeta
                 # Compute the corresponding z value
                 #z = (j - 0.5) * scaling / n
 
@@ -188,7 +197,7 @@ function project_mesh(vertices, faces, pixelsize, scale)
                     end
 
                     #If it's not already there...
-                    if !(any(isapprox.(extrema, x, rtol=0.00001)))
+                    if !(any(isapprox.(extrema, x, rtol=1e-11)))
 
                         # If it is contained, then save it.
                         push!(extrema, x)
@@ -216,7 +225,7 @@ function project_mesh(vertices, faces, pixelsize, scale)
 end
 
 #contatore = 0
-function thickness(vector)
+function thicknessCompute(vector)
     thick = 0
     leng = length(vector)
 	if (leng == 1)
@@ -234,45 +243,42 @@ function thickness(vector)
 end
 
 
-function small_primes_product(n::Int)
-    # find the largest power of 2 less than or equal to n
-    res_p2 = 0
-	res_p3 = 0
-	res_p5 = 0
 
-	result = Inf
 
-	for p2 in 0:Int(floor(log2(n)+1))
-		for p3 in 0:Int(floor(log(n)/log(3) + 1))
-			for p5 in 0:Int(floor(log(n)/log(5) + 1))
-				temp = 2^p2 * 3^p3 * 5^p5
-				if temp >= n && temp < result
-					result = temp
-					res_p2 = p2
-					res_p3 = p3
-					res_p5 = p5
-				end
-			end
+function cleanup(array)
+	result = []
+	n =size(array)[1]
+	for i in 1:n
+		if (i > 1) && (array[i] - array[i-1] < 2e-9)
+			push!(result, array[i])
+			continue
+		end
+		if (i < n) && (array[i+1] - array[i] < 2e-9)
+			push!(result, array[i])
+			continue
 		end
 	end
-
-    # print the factorization of the result
-    println("Closest to $n is $result with factorization: 2^$(res_p2) * 3^$(res_p3) * 5^$(res_p5)")
-
-    return result
+	return result
 end
 
-
-function GetThickness(filename, pixelsize, scale)
+function GetThickness(filename, pixelsize, scale, clean)
 	# Load the .obj file and save the coordinates of the mesh at each pixel of a
 	# grid with size pixelsize.
-	projection_matrix = project_mesh(load_obj("obj\\$filename.obj")...,pixelsize, scale)
+	vertices, faces = load_obj("..\\obj\\$filename.obj")
 
-	image = Matrix{Float64}(thickness.(projection_matrix))
+	projection_matrix = project_mesh(vertices, faces, pixelsize, scale)
+
+	if (clean)
+		projection_matrix = cleanup.(projection_matrix)
+	end
+
+	f(x) = x > 0 ? x : 0.
+
+	image = Matrix{Float64}(thicknessCompute.(projection_matrix)) .|> f
 
 	image_size = size(image)
 
-	println(image_size)
+	println("Generated image size is", image_size, ". In meters, ", image_size .* pixelsize)
 
 	#For FFT, having an image size which is a product powers of small primes is better
 	new_size = small_primes_product.(image_size)
@@ -280,8 +286,22 @@ function GetThickness(filename, pixelsize, scale)
 	new_image = zeros(new_size...)
 	#Compute the best border
 	border = Int.(floor.((new_size .- image_size)./2))
+	println("border: ", border)
 	#Paste the original image, centered, in the empty image
-	new_image[(border[1]) : (border[1]+image_size[1]-1), (border[2]):(border[2]+image_size[2]-1)] = image
+	new_image[(border[1] + 1) : (border[1]+image_size[1]), (border[2] + 1):(border[2]+image_size[2])] = image
 
 	return new_image
+end
+
+function thicknessToFile(filename, pixelsize, scale, clean)
+
+	image = GetThickness(filename, pixelsize, scale, clean)
+
+	save("$filename.jld", "img", image, "pixel", pixelsize)
+end
+
+function thicknessFromFile(filename)
+	image = load("$filename.jld", "img")
+	pixelsize = load("$filename.jld", "pixel")
+	return image, pixelsize
 end
