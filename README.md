@@ -21,7 +21,7 @@ This repository contains some code about phase-contrast imaging using X-rays. Mo
 ] add https://github.com/JuliaPhysics/PhysicalOptics.jl
 ```
 
-5. Copy the three `.jl` files of this project in your directory
+5. Copy the three `.jl` files from the `src` folder to your directory
 
 6. You can now use the functions of this project your Julia script by adding the lines
 ```Julia
