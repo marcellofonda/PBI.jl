@@ -114,6 +114,52 @@ julia> Threads.nthreads()
 Note: `thickness`, `k`, `R`, and `pixelsize` must be expressed in the same unit system.
 </details>
 
-## `retrieval.jl`
+### `retrieval.jl`
 
+In the `retrieval.jl` file, there are two main functions of interest:
+
+
+```Julia
+PhaseRetrieve(input_image, δ, β, k, R, pixelsize)
+```
+which executes the numerical phase retrieval on a Propagation-Based Phase-Contrast image through the Paganin Method:
+$$t = -\frac1{2k\beta}\ln\left(\mathcal{F}^{-1}\left(\frac{\mathcal{F}[I_R/I_0](u,v)}{1+\frac{R\delta}{2k\beta}(u^2+v^2)}\right)\right),$$
+assuming $I_0=1$.
+<details>
+<summary>Arguments description</summary>
+
+* `input_image` is the measured image;
+* `δ` is the real decrement of the refractive index;
+* `β` is the imaginary part of the refractive index;
+* `k` is the wave number;
+* `R` is the propagation distance;
+* `pixelsize` is the size of the pixel in the imaging system.
+
+Note: `k`, `R`, and `pixelsize` must be expressed in the same unit system. The output will be in that unit system.
+</details>
+
+
+```Julia
+DarkFieldRetrieve(input_image, δ, β, R, λ, pixelsize, ε; scale = 1, save_images = true)
+```
+which executes the numerical retrieval of dark-field signal on a Propagation-Based Phase-Contrast image through the Gureyev Method:
+$$A_{\mathrm{Born}} = \frac1{I_{\mathrm{TIE}}}\mathcal{F}^{-1}\left(\frac{\hat I_R(u,v)-\hat I_{R,\mathrm{TIE}}(u,v)}{-2\sqrt{1+\gamma^2}\cos{[\pi\lambda R(u^2+v^2)-\arctan(\gamma)]}}\right),$$
+with $\gamma=\delta/\beta$ and assuming $I_0=1$.
+<details>
+<summary>Arguments description</summary>
+
+* `input_image` is the measured image;
+* `δ` is the real decrement of the refractive index;
+* `β` is the imaginary part of the refractive index;
+* `R` is the propagation distance;
+* `λ` is the wavelength;
+* `pixelsize` is the size of the pixel in the imaging system;
+* `ε` is the dimensionless parameter for Tykhonoff regularization;
+* `scale` is the optional upscaling factor (default value 1) to use in forward propagations to avoid artifacts due to sampling;
+* `save_images` is the optional parameter to save all intermediate images and defaults to `false`.
+
+Note: `λ`, `R`, and `pixelsize` must be expressed in the same unit system.
+
+The output is a `Tuple` containing `A_Born`, `I_TIE_PR` (TIE Phase-Retrieval), and, optionally (if `save_images` is set to `true`), `images_paths`, an array containing the paths to the saved images.
+</details>
 

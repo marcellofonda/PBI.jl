@@ -13,16 +13,16 @@ include("simulation.jl")
 
 
 """
-    TIERetrieve(Input, γ, λ, z, pixelsize)
+    TIERetrieve(Input, γ, λ, R, pixelsize)
 
 Backpropagate the image from image plane to object plane using the transport of intensity equation.
 
 The input intensity is expected to be in Fourier space, and the output is also an intensity in Fourier space.
 """
-function TIERetrieve(Input, γ, λ, z, pixelsize)
+function TIERetrieve(Input, γ, λ, R, pixelsize)
     # get the size of the input image
     n, m = size(Input)
-	cost = z * γ * λ / 4π
+	cost = R * γ * λ / 4π
 
     # calculate the frequency domain coordinates
 	freq_squared = getSquaredFrequenciesGrid(n,m,pixelsize)
@@ -31,16 +31,16 @@ function TIERetrieve(Input, γ, λ, z, pixelsize)
 end
 
 """
-    TIERetrieve(Input, δ, β, k, z, pixelsize)
+    TIERetrieve(Input, δ, β, k, R, pixelsize)
 
 Backpropagate the image from image plane to object plane using the transport of intensity equation.
 
 The input intensity is expected to be in Fourier space, and the output is also an intensity in Fourier space.
 """
-function TIERetrieve(Input, δ, β, k, z, pixelsize)
+function TIERetrieve(Input, δ, β, k, R, pixelsize)
     # get the size of the input image
     n, m = size(Input)
-	cost = (z * δ) / (2k * β)
+	cost = (R * δ) / (2k * β)
 
     # calculate the frequency domain coordinates
 	freq_squared = getSquaredFrequenciesGrid(n,m,pixelsize)
@@ -51,10 +51,10 @@ end
 
 
 "Execute Phase Retrieval inverting the Transport of Intensity Equation on a PB image"
-function PhaseRetrieve(input_image, δ, β, k, z, pixelsize)
+function PhaseRetrieve(input_image, δ, β, k, R, pixelsize)
 	image = fft(input_image)
 
-	image = ifft(TIERetrieve(image, δ, β, k, z, pixelsize))
+	image = ifft(TIERetrieve(image, δ, β, k, R, pixelsize))
 
 	image = -1/(2k * β) * log.(abs.(image))
 end
@@ -68,16 +68,16 @@ end
 ##############################
 
 "Compute the factor for Born scattering backpropagation"
-bornFactor(λ, z, γ, ν2) =  -2( cos(π* λ * z * ν2) + γ * sin( π * λ * z * ν2 ))
+bornFactor(λ, R, γ, ν2) =  -2( cos(π* λ * R * ν2) + γ * sin( π * λ * R * ν2 ))
 
 "Compute the factor for Born scattering backpropagation"
-bornFactor(λ, z, δ, β, ν2) =  -2( cos(π * λ * z * ν2) + δ * sin( π * λ * z * ν2 )/ β) 
+bornFactor(λ, R, δ, β, ν2) =  -2( cos(π * λ * R * ν2) + δ * sin( π * λ * R * ν2 )/ β) 
 
 tychonoffFactors(λ, R, γ, ν2, ε) = cos(π*λ*R*ν2 - atan(γ))/(2sqrt(1+γ^2) * (ε + cos(π*λ*R*ν2 - atan(γ))^2))
 
 
 # This function does the dark field phase retrieval.
-function DarkFieldRetrieve(I_R_measured, δ, β, z, λ, pixelsize, ε; scale = 20, save_images = true)
+function DarkFieldRetrieve(input_image, δ, β, R, λ, pixelsize, ε; scale = 1, save_images = false)
 
 	images_paths = []
 
@@ -89,14 +89,14 @@ function DarkFieldRetrieve(I_R_measured, δ, β, z, λ, pixelsize, ε; scale = 2
 	println("Performing FFT...")
 
 	# Do Fourier transform
-	I_R = fft(I_R_measured) #Intensity in Fourier space
+	I_R = fft(input_image) #Intensity in Fourier space
 
 
 
 	### FIRST STEP: TIE RETRIEVE
 
 	println("Done. Performing TIE retrieve...")
-	I_0_TIE = TIERetrieve(I_R, γ, λ, z, pixelsize)
+	I_0_TIE = TIERetrieve(I_R, γ, λ, R, pixelsize)
 	
 	save_images && printImage(abs.(ifft(I_0_TIE)), "I_0_TIE", images_paths);
 
@@ -108,14 +108,14 @@ function DarkFieldRetrieve(I_R_measured, δ, β, z, λ, pixelsize, ε; scale = 2
 	### SECOND STEP: PROPAGATE FORWARD
 
 	println("Done. Forward propagating solution...")
-	I_R_TIE = FresnelPropagate(I_0_TIE, λ, γ, z, pixelsize; scale=scale)
+	I_R_TIE = FresnelPropagate(I_0_TIE, λ, γ, R, pixelsize; scale=scale)
 
 	save_images && printImage(abs.(ifft(I_R_TIE)), "I_R_TIE", images_paths);
 
 	### THIRD STEP: ITERATIVELY RECONSTRUCT DARK FIELD IMAGE
 
 	println("Done. Entering loop.")
-	n,m = size(I_R_measured)
+	n,m = size(input_image)
 
 	ΔI_R_m = zeros(n,m)
 	I_0_m = zeros(n,m)
@@ -124,7 +124,7 @@ function DarkFieldRetrieve(I_R_measured, δ, β, z, λ, pixelsize, ε; scale = 2
 
 	# calculate the frequency domain coordinates
 	freq_squared = getSquaredFrequenciesGrid(n,m,pixelsize)
-	born_factors = tychonoffFactors.(λ, z, γ, freq_squared, ε)#bornFactor.(λ, z, δ, β, freq_squared)
+	born_factors = tychonoffFactors.(λ, R, γ, freq_squared, ε)#bornFactor.(λ, R, δ, β, freq_squared)
 
 	for m in 1:1
 		println("m = ",m)
@@ -137,7 +137,7 @@ function DarkFieldRetrieve(I_R_measured, δ, β, z, λ, pixelsize, ε; scale = 2
 		save_images && printImage(abs.(ifft(I_0_m)), "I_0_$m", images_paths)
 
 		println("Done backpropagating. Doing it forward again...")
-		I_R_m_meno_1 = FresnelPropagate(I_0_m, λ, γ, z, pixelsize; scale=scale)
+		I_R_m_meno_1 = FresnelPropagate(I_0_m, λ, γ, R, pixelsize; scale=scale)
 		save_images && printImage(abs.(ifft(I_R_m_meno_1)), "I_R_$m", images_paths)
 		
 		println("Solution propagated. Going to next iteration")
