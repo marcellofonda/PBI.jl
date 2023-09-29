@@ -123,7 +123,7 @@ In the `retrieval.jl` file, there are two main functions of interest:
 PhaseRetrieve(input_image, δ, β, k, R, pixelsize)
 ```
 which executes the numerical phase retrieval on a Propagation-Based Phase-Contrast image through the Paganin Method:
-$$t = -\frac1{2k\beta}\ln\left(\mathcal{F}^{-1}\left(\frac{\mathcal{F}[I_R/I_0](u,v)}{1+\frac{R\delta}{2k\beta}(u^2+v^2)}\right)\right),$$
+$$t = -\frac1{2k\beta}\ln\left(\mathcal{F}^{-1}\left(\frac{\mathcal{F}[I_R/I_0] (u,v)}{1+\frac{R\delta}{2k\beta}(u^2+v^2)}\right)\right),$$
 assuming $I_0=1$.
 <details>
 <summary>Arguments description</summary>
