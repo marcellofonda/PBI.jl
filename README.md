@@ -1,6 +1,6 @@
 # X-ray Propagation-Based Phase-Contrast Imaging and Retrieval
 
-This repository contains some code about Propagation-Based Phase-Contrast imaging of homogeneous samples using X-rays. More about it at [marcellofonda.github.io/Tesi](https://marcellofonda.github.io/Tesi)
+This repository contains some code about Propagation-Based Phase-Contrast imaging of homogeneous samples using X-rays.
 
 ## How to use it
 1. Clone the repository using git, or copy-paste source code into your own files.
