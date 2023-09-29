@@ -39,9 +39,7 @@ In the `simulation.jl` file, there are four main functions of interest:
 AbsoprtionRadiography(thickness, β, k, I_0)
 ```
 which simulates a traditional absorption radiography image through the Beer-Lambert law:
-$$
-    I_T = I_0 e^{-2k\beta\cdot \mathrm{thickness}}
-$$
+$$I_T = I_0 e^{-2k\beta\cdot \mathrm{thickness}}$$
 * `thickness` is expected to be a matrix of thickness values representing the sample; 
 * `β` is the imaginary part of the refractive index;
 * `k` is the wave number;
@@ -52,9 +50,7 @@ Note: `thickness` and `k` must be expressed in the same unit system.
 LaplacianRadiography(thickness, δ, β, k, I_0, R, pixelsize)
 ```
 which simulates a Propagation-Based Phase-Contrast image through the analytical expression derived from the Transport of Intensity Equation. Namely:
-$$
-    I_R = \left(1-\frac{R\delta}{2k\beta}\nabla^2\right)I_0 e^{-2k\beta\cdot \mathrm{thickness}}
-$$
+$$I_R = \left(1-\frac{R\delta}{2k\beta}\nabla^2\right)I_0 e^{-2k\beta\cdot \mathrm{thickness}}$$
 * `thickness` is expected to be a matrix of thickness values representing the sample;
 * `δ` is the real decrement of the refractive index;
 * `β` is the imaginary part of the refractive index;
@@ -68,9 +64,7 @@ Note: `thickness`, `k`, `R`, and `pixelsize` must be expressed in the same unit 
 FresnelRadiography(thickness, δ, β, k, I_0, R, pixelsize)
 ```
 which simulates a Propagation-Based Phase-Contrast image by propagating the absorption image through the Fresnel Propagation Integral:
-$$
-    \psi_R(x,y)=\frac{e^{ikR}}{i\lambda R}\int \exp\left\{\frac{i\pi}{\lambda R}[(x-x')^2+(y-y')^2]\right\}\psi_0(x',y')dx'dy'
-$$
+$$\psi_R(x,y)=\frac{e^{ikR}}{i\lambda R}\int \exp \left( \frac{i\pi}{\lambda R}[(x-x')^2+(y-y')^2] \right) \psi_0(x',y')dx'dy'$$
 * `thickness` is expected to be a matrix of thickness values representing the sample;
 * `δ` is the real decrement of the refractive index;
 * `β` is the imaginary part of the refractive index;
