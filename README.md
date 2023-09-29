@@ -40,17 +40,24 @@ AbsoprtionRadiography(thickness, β, k, I_0)
 ```
 which simulates a traditional absorption radiography image through the Beer-Lambert law:
 $$I_T = I_0 e^{-2k\beta\cdot \mathrm{thickness}}$$
+<details>
+<summary>Arguments description</summary>
+
 * `thickness` is expected to be a matrix of thickness values representing the sample; 
 * `β` is the imaginary part of the refractive index;
 * `k` is the wave number;
 * `I_0` the initial intensity of radiation.
 Note: `thickness` and `k` must be expressed in the same unit system.
+</details>
 
 ```Julia
 LaplacianRadiography(thickness, δ, β, k, I_0, R, pixelsize)
 ```
 which simulates a Propagation-Based Phase-Contrast image through the analytical expression derived from the Transport of Intensity Equation. Namely:
 $$I_R = \left(1-\frac{R\delta}{2k\beta}\nabla^2\right)I_0 e^{-2k\beta\cdot \mathrm{thickness}}$$
+<details>
+<summary>Arguments description</summary>
+
 * `thickness` is expected to be a matrix of thickness values representing the sample;
 * `δ` is the real decrement of the refractive index;
 * `β` is the imaginary part of the refractive index;
@@ -59,12 +66,16 @@ $$I_R = \left(1-\frac{R\delta}{2k\beta}\nabla^2\right)I_0 e^{-2k\beta\cdot \math
 * `R` is the propagation distance;
 * `pixelsize` is the size of the pixel in the imaging system.
 Note: `thickness`, `k`, `R`, and `pixelsize` must be expressed in the same unit system.
+</details>
 
 ```Julia
 FresnelRadiography(thickness, δ, β, k, I_0, R, pixelsize)
 ```
 which simulates a Propagation-Based Phase-Contrast image by propagating the absorption image through the Fresnel Propagation Integral:
 $$\psi_R(x,y)=\frac{e^{ikR}}{i\lambda R}\int \exp \left( \frac{i\pi}{\lambda R}[(x-x')^2+(y-y')^2] \right) \psi_0(x',y')dx'dy'$$
+<details>
+<summary>Arguments description</summary>
+
 * `thickness` is expected to be a matrix of thickness values representing the sample;
 * `δ` is the real decrement of the refractive index;
 * `β` is the imaginary part of the refractive index;
@@ -73,11 +84,18 @@ $$\psi_R(x,y)=\frac{e^{ikR}}{i\lambda R}\int \exp \left( \frac{i\pi}{\lambda R}[
 * `R` is the propagation distance;
 * `pixelsize` is the size of the pixel in the imaging system.
 Note: `thickness`, `k`, `R`, and `pixelsize` must be expressed in the same unit system.
+</details>
+
+
 
 ```Julia
 montecarlo_radiography(size_x, size_y, photons_per_pixel, t, grad_t, δ, β, k, R, pixelsize; multithreading = true)
 ```
 which simulates a Propagation-Based Phase-Contrast image through a MC simulation.
+
+<details>
+<summary>Arguments description</summary>
+
 * `size_x` and `size_y` are the dimensions of the desired output image;
 * `photons_per_pixel` is the average number of photons per pixel to be simulated;
 * `t` is a function representing the thickness distribution of the sample, e.g.:
@@ -94,5 +112,8 @@ which simulates a Propagation-Based Phase-Contrast image through a MC simulation
 julia> Threads.nthreads()
 ```
 Note: `thickness`, `k`, `R`, and `pixelsize` must be expressed in the same unit system.
+</details>
+
+## `retrieval.jl`
 
 
