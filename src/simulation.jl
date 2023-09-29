@@ -143,10 +143,10 @@ function FresnelPropagate(I_0, λ, δ, β, z, pixelsize)
 	return (fft(propagated_intensity))
 end
 
-function FresnelRadiography(t, δ, β, k, I_0, R, pixelsize)
+function FresnelRadiography(thickness, δ, β, k, I_0, R, pixelsize)
     #Absorption
 	attenuation(x) = exp(-(2 * k * β) * x)
-	att = I_0 * attenuation.(t)
+	att = I_0 * attenuation.(thickness)
 
     return ifft(FresnelPropagate(fft(att), 2π/k, δ/β, R, pixelsize)) .|> abs
 end
